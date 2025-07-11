@@ -74,6 +74,41 @@ const StreamlitCropper = (props: ComponentProps) => {
         fabricCanvas.add(rect);
         rectRef.current = rect;
 
+        // ★★★ ここから修正 ★★★
+        // This function constrains the cropping rectangle to the canvas boundaries.
+        const constrainRect = (options: any) => {
+            const obj = options.target;
+            if (!obj) return;
+
+            const canvasWidth = fabricCanvas.getWidth();
+            const canvasHeight = fabricCanvas.getHeight();
+
+            // Update object's coordinates to get the latest bounding box
+            obj.setCoords();
+            const B = obj.getBoundingRect();
+
+            // Constrain left boundary
+            if (B.left < 0) {
+                obj.left = 0;
+            }
+            // Constrain top boundary
+            if (B.top < 0) {
+                obj.top = 0;
+            }
+            // Constrain right boundary
+            if (B.left + B.width > canvasWidth) {
+                obj.left = canvasWidth - B.width;
+            }
+            // Constrain bottom boundary
+            if (B.top + B.height > canvasHeight) {
+                obj.top = canvasHeight - B.height;
+            }
+        };
+
+        // Apply constraints after any modification (move or scale)
+        fabricCanvas.on('object:modified', constrainRect);
+        // ★★★ ここまで修正 ★★★
+
         setCanvas(fabricCanvas);
         Streamlit.setFrameHeight();
 
